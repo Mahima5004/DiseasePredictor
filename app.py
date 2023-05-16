@@ -4,10 +4,13 @@ import altair as alt
 from urllib.error import URLError
 import pandas as pd
 import csv
-import pickle
 from sklearn import tree
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+
+
 
 file = open('final_dataset.csv')
 csv_file = csv.reader(file)
@@ -88,15 +91,18 @@ model = tree.DecisionTreeClassifier()
 model.fit(X_train,Y_train)
 
 model.score(X_test,Y_test)
+Y_pred=model.predict(X_test)
+accuracy_score=accuracy_score(Y_test, Y_pred)
 
 
 
 
+st.set_page_config(page_title='Disease Predictor', page_icon = "👩‍⚕️")
 
+with open('style.css') as f:
+    st.markdown(f'<style>{f.read()}</style>',unsafe_allow_html=True)
+@st.cache_data
 
-st.set_page_config(page_title='Disease Predictor', page_icon = "🏥")
-
-@st.cache
 
 def predict_disease(inp):
     return le_disease.inverse_transform(model.predict([inp]))
@@ -107,18 +113,19 @@ def get_symptoms():
 
 try:
     df = get_symptoms()
+    st.title("Let us help you for Better Treatment🩺")
     input_Simps = st.multiselect(
-        "Choose Symptoms", list(df['Symptoms'])
+        "Choose Symptoms which are causing you problem", list(df['Symptoms'])
     )
     if not input_Simps:
-        st.success("No symptoms? That means You're healthy...")
+        st.success("No symptoms? That means You're healthy 👍😊❤️‍🩹")
     else:
         inp = [0]*132
         for simp in input_Simps:
             inp[symptom_hasher[simp]] = 1
 
         x = predict_disease(inp)[0]
-        st.write(f'I gues you most probably have {x}.')
+        st.write(f'I think you are suffering from {x}.')
 
         message = ""
 
@@ -133,13 +140,15 @@ try:
                 break
 
         st.info(message)
+        #st.write(accuracy_score)
+        
 
 
 
 except URLError as e:
     st.error(
         """
-        **This demo requires internet access.**
+        **internet access require.**
 
         Connection error: %s
     """
