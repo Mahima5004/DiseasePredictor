@@ -4,3 +4,12 @@ header.css-1avcm0n.e8zbici2{
 section.main.css-uf99v8.egzxvld5{
  background-color:#19A7CE ;
 }
+header{
+    visibility: hidden;
+}
+footer{
+    visibility: hidden;
+}
+#MainMenu{
+    visibility: hidden;
+}
