@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
 from urllib.error import URLError
 import pandas as pd
 import csv
@@ -24,32 +23,34 @@ prec_csv = csv.reader(precautions)
 header = next(csv_file)
 symptoms_header = next(symptom_csv)
 
+
 symptom_hasher = {}
 count = 0
 
 for symptom in symptom_csv:
-    symptom_hasher[symptom[0]] = count
+    symptom_hasher[symptom[0]] = count #building hash table for symptoms using symptom severity file
     count += 1
 
-rows = []
+rows = []  
 
 for row in csv_file:
-    rows.append(row)
+    rows.append(row) #stroring the final dataset
+
 
 disease_symptoms = []
 
 for row in rows:
     x = []
-    x.append(row[0])
+    x.append(row[0]) #storing all the diseases from the final csv file
 
-    for i in range(17):
+    for i in range(17): #as final csv file contains maximum of 17 symptom columns
         if row[i + 1] != '':
             a = row[i + 1].strip() 
             b = a.split(" ") 
             c = ''.join(b)
-            x.append(symptom_hasher[c])
+            x.append(symptom_hasher[c]) #after each disease storing the hash value of their symptoms
 
-    disease_symptoms.append(x)
+    disease_symptoms.append(x) #list of rows with the disease value on first position preceding by symptoms hash value using symptoms
 
 
 final_data = []
@@ -58,8 +59,8 @@ for disease in disease_symptoms:
   symptom_indices = disease[1:]
   i = len(symptom_indices)
   zeros = [0] * 133
-  for ii in range(i):
-    zeros[symptom_indices[ii]] = 1
+  for j in range(i):
+    zeros[symptom_indices[j]] = 1
   vector = [disease[0]] + zeros
   final_data.append(vector)
 
@@ -69,7 +70,7 @@ df = pd.DataFrame(final_data,columns = ['Disease'] + [i for i in range(133)])
 
 
 
-clean_data = df.drop(117,axis='columns')
+clean_data = df.drop(117,axis='columns') #beacuse of ambiguity
 
 inputs = clean_data.drop("Disease",axis='columns')
 target = clean_data["Disease"]
@@ -78,7 +79,6 @@ target = clean_data["Disease"]
 le_disease = LabelEncoder()
 
 target['Disease_final'] = le_disease.fit_transform(target)
-
 
 
 final_target = pd.DataFrame(target["Disease_final"],columns=["Disease"])
@@ -90,8 +90,8 @@ X_train,X_test,Y_train,Y_test = train_test_split(inputs,final_target, test_size=
 model = tree.DecisionTreeClassifier()
 model.fit(X_train,Y_train)
 
-model.score(X_test,Y_test)
 Y_pred=model.predict(X_test)
+
 accuracy_score=accuracy_score(Y_test, Y_pred)
 
 
@@ -101,7 +101,6 @@ st.set_page_config(page_title='Disease Predictor', page_icon = "👩‍⚕️")
 
 with open('style.css') as f:
     st.markdown(f'<style>{f.read()}</style>',unsafe_allow_html=True)
-@st.cache_data
 
 
 def predict_disease(inp):
@@ -118,7 +117,7 @@ try:
         "Choose Symptoms which are causing you problem", list(df['Symptoms'])
     )
     if not input_Simps:
-        st.success("No symptoms? That means You're healthy 👍😊❤️‍🩹")
+        st.success("There seems no symptoms? That means You're healthy 👍😊❤️‍🩹")
     else:
         inp = [0]*132
         for simp in input_Simps:
@@ -131,12 +130,12 @@ try:
 
         for disease in prec_csv:
             if disease[0].lower() == x.lower():
-                out = "You should follow these precautions : \n"
+                out = "For now you should follow these precautions : \n"
                 for precaution in disease[1:]:
                     if precaution != "":
                         out = out + precaution.capitalize() + ", \n"
 
-                message = out
+                message = out+"Afterwords you should book an appointment via MediHelp."
                 break
 
         st.info(message)
